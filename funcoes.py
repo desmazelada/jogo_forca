@@ -56,12 +56,14 @@ def contaErro():
 
 
 def testaLetra():
+    global letra
     letra = convertCaps(input("Insira aqui o seu chute: "))
     limpaTela()
 
-    if letra in letrasPalavra:
-        print("Ótimo chute!")
-    else:
+    try:
+        if letra in letrasPalavra:
+            print("Ótimo chute!")
+    except:
         print("Que pena, você errou...")
         contaErro()
 
@@ -81,11 +83,18 @@ def mostraDica():
         print("Suas dicas acabaram! Agora você precisa arriscar uma letra.\n")
         mostraPalavra()
 
+def mostraLetra():
+    global letra
+    global palavraOculta
+    palavraOculta = list("*" * (len(palavraChave)))
+    for i in range(len(letrasPalavra)):
+	    if letra == letrasPalavra[i]:
+		    palavraOculta[i] = letra
 
 def mostraPalavra():
     global temDicas
-    palavraOculta = "*" * len(palavraChave)
-    print(f'Sua palavra é:\n\n{palavraOculta}\n')
+    mostraLetra()
+    print(f'Sua palavra é:\n\n{"".join(palavraOculta)}\n')
 
     if temDicas:
         escolha = input(
@@ -101,3 +110,32 @@ def mostraPalavra():
             mostraPalavra()
     else:
         testaLetra()
+
+def finalJogo():
+    letrasReveladas = int
+    if chances == 0:
+        print('Oh não!!!! Você gastou todas as suas chances e acabou sendo enforcado!')
+        print()
+        print("|----- ")
+        print("|    | ")
+        print("|    O ")
+        print("|   /|\ ")
+        print("|    | ")
+        print("|   / \ ")
+        print("_      ")
+        print()
+        palavraCerta = print('A palavra era', palavraChave)
+        vencedor = print('Vencedor:', desafiante)
+        competidor = print('Perdedor: ', competidor)
+    elif letrasReveladas == len(letrasPalavra):
+        print('Você venceu o jogo e se livrou da forca. Parabéns!')
+        palavraCerta = print('A palavra era', palavraChave)
+        vencedor = print('Vencedor:', desafiante)
+        competidor = print('Perdedor: ', competidor)
+
+        
+        
+
+    
+
+
