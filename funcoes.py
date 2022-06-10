@@ -1,9 +1,4 @@
 import os
-import time
-
-i = 0
-chances = 5
-temDicas = bool
 
 
 def limpaTela():
@@ -14,14 +9,25 @@ def convertCaps(texto):
     return texto.upper()
 
 
+def reiniciaVariaveis():
+    global i
+    global chances
+    global temDicas
+    global letrasReveladas
+    i = 0
+    chances = 5
+    temDicas = bool
+    letrasReveladas = 0
+
+
 def defineJogadores():
     limpaTela()
     print("\n******Jogo da Forca******\n")
 
     global desafiante
     global competidor
-    desafiante = input("Digite o nome do Desafiante: ")
-    competidor = input("Digite o nome do Competidor: ")
+    desafiante = convertCaps(input("Digite o nome do Desafiante: "))
+    competidor = convertCaps(input("Digite o nome do Competidor: "))
     limpaTela()
 
 
@@ -31,7 +37,9 @@ def definePalavra():
     palavraChave = convertCaps(
         input(f'\nInsira aqui a palavra que vai enforcar {competidor}: '))
     global letrasPalavra
+    global palavraOculta
     letrasPalavra = list(palavraChave)
+    palavraOculta = list("*" * (len(palavraChave)))
 
 
 def defineDicas():
@@ -40,32 +48,59 @@ def defineDicas():
     global dicas
     dicas = []
     while len(dicas) < 3:
-        dica = input("Insira aqui uma dica: ")
+        dica = convertCaps(input("Insira aqui uma dica: "))
         dicas.append(dica)
-    print(f'Seja bem-vindo(a) ao jogo, {competidor}...\n')
     limpaTela()
+    print(f'Seja bem-vindo(a) ao jogo, {competidor}...\n\n')
     return dicas
 
 
 def contaErro():
     global chances
+    global ganhou
     chances = chances - 1
     if chances > 0:
-        print(f'Cuidado, {competidor}, só te restam {chances} chances!\n')
-        mostraPalavra()
+        print(f'Cuidado, {competidor}. Só te restam {chances} chances!\n')
 
 
 def testaLetra():
     global letra
-    letra = convertCaps(input("Insira aqui o seu chute: "))
+    global ganhou
+    global letrasReveladas
+    letra = convertCaps(input("\nInsira aqui o seu chute: "))
     limpaTela()
 
     try:
+        letra in letrasPalavra
+        letrasReveladas = letrasReveladas + letrasPalavra.count(letra)
+        localLetra = letrasPalavra.index(letra)
+
         if letra in letrasPalavra:
-            print("Ótimo chute!")
+            print(f'Ótimo chute, {competidor}!\n')
+
+        for localLetra, value in enumerate(letrasPalavra):
+            if value == letra:
+                palavraOculta[localLetra] = letra
     except:
-        print("Que pena, você errou...")
+        print("Sinto muito, você errou...")
         contaErro()
+    finally:
+        global vencedor
+        global perdedor
+        if letrasReveladas == len(letrasPalavra):
+            ganhou = True
+            vencedor = f'Competidor {competidor}'
+            perdedor = f'Desafiante {desafiante}'
+            atualizaHistorico()
+            mostraVencedor()
+        elif chances == 0:
+            ganhou = False
+            vencedor = f'Desafiante {desafiante}'
+            perdedor = f'Competidor {competidor}'
+            atualizaHistorico()
+            mostraVencedor()
+        else:
+            mostraPalavra()
 
 
 def mostraDica():
@@ -80,25 +115,18 @@ def mostraDica():
         mostraPalavra()
     else:
         temDicas = False
-        print("Suas dicas acabaram! Agora você precisa arriscar uma letra.\n")
+        print("Suas dicas acabaram! Tá díficil? Que pena!\nDe qualquer jeito você vai ter que arriscar uma letra.\n")
         mostraPalavra()
 
-def mostraLetra():
-    global letra
-    global palavraOculta
-    palavraOculta = list("*" * (len(palavraChave)))
-    for i in range(len(letrasPalavra)):
-	    if letra == letrasPalavra[i]:
-		    palavraOculta[i] = letra
 
 def mostraPalavra():
     global temDicas
-    mostraLetra()
+    global palavraOculta
     print(f'Sua palavra é:\n\n{"".join(palavraOculta)}\n')
 
     if temDicas:
         escolha = input(
-            "Deseja arriscar uma letra?\n(0) Jogar\n(1) Pedir dica\n")
+            "Deseja arriscar uma letra?\n(0) Jogar\n(1) Pedir dica\n\n")
 
         if escolha == "0":
             testaLetra()
@@ -106,36 +134,55 @@ def mostraPalavra():
             mostraDica()
 
         else:
+            limpaTela()
             print("Escolha uma opção válida!")
             mostraPalavra()
     else:
         testaLetra()
 
-def finalJogo():
-    letrasReveladas = int
-    if chances == 0:
-        print('Oh não!!!! Você gastou todas as suas chances e acabou sendo enforcado!')
-        print()
+
+def atualizaHistorico():
+    global historico
+    historico = open('historico.txt', 'a', encoding="utf8")
+    historico.writelines(
+        f'Palavra: {palavraChave} // Vencedor: {vencedor} // Perdedor: {perdedor}\n')
+    historico.close()
+
+
+def mostraVencedor():
+    if ganhou:
+        print(
+            f'Você venceu o jogo e se livrou da forca. Parabéns, {competidor}!\n')
+        print("  ┌─┐  ─┐ ")
+        print("  │▒│ /▒/")
+        print("  │▒│/▒/")
+        print("  │▒│/▒/")
+        print("  │▒ /▒/─┬─┐")
+        print("  │▒│▒|▒│▒│")
+        print(" ┌┴─┴─┐-┘─┘")
+        print(" │▒┌──┘▒▒▒│")
+        print(" └┐▒▒▒▒▒▒┌┘")
+        print("  └┐▒▒▒▒┌\n")
+        print(f'A palavra era {palavraChave}.\n{desafiante} perdeu o jogo!\n')
+    else:
+        print(
+            f'Oh não!!!! Você gastou todas as suas chances e acabou sendo enforcado! Que pena, {competidor}...\n')
         print("|----- ")
         print("|    | ")
         print("|    O ")
         print("|   /|\ ")
         print("|    | ")
         print("|   / \ ")
-        print("_      ")
-        print()
-        palavraCerta = print('A palavra era', palavraChave)
-        vencedor = print('Vencedor:', desafiante)
-        competidor = print('Perdedor: ', competidor)
-    elif letrasReveladas == len(letrasPalavra):
-        print('Você venceu o jogo e se livrou da forca. Parabéns!')
-        palavraCerta = print('A palavra era', palavraChave)
-        vencedor = print('Vencedor:', desafiante)
-        competidor = print('Perdedor: ', competidor)
+        print("_      \n")
+        print(f'A palavra era {palavraChave}.\n{desafiante} venceu o jogo!\n')
 
-        
-        
-
-    
+    historico = open('historico.txt', 'r', encoding="utf8")
+    dados = historico.read()
+    print('Histórico do Jogo:')
+    print(f'\n{dados}\n')
 
 
+def apagaHistorico():
+    historico = open('historico.txt', 'w')
+    historico.writelines('')
+    historico.close()
